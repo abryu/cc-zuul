@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zuul-np
+  labels:
+    app: zuul
+spec:
+  type: NodePort
+  ports:
+  - port: 30031
+    name: zuul
+  selector:
+    app: zuul
+---
+apiVersion: v1
+Kind: Service
+metadata:
+  name: zuul-cl
+  labels:
+    app: zuul
+spec:
+  type: ClusterIP
+  ports:
+  - port: 30031
+    name: zuul
+  selector:
+    app: zuul
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zuul
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zuul
+  template:
+    metadata:
+      labels:
+        app: zuul
+    spec:
+      containers:
+      - name: zuul
+        image: abryu082/zuul:v1.0.2
+        ports:
+        - containerPort: 30031
+        env:
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: eureka-cm
+              key: eureka_service_address
